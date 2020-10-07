@@ -73,6 +73,8 @@ router.get('/resultUser',(req,res,next) =>
 router.get('/:userId',(req,res,next)=>
 { 
     userId = req.params.userId; 
+    // select * from users u join surveyAssign sc on sc.whom = u.id where u.id in (select whom from surveyAssign where who = 16) and u.id not in(select surveyUserId from answers where userId = 16)
+
     database.query(`select * from users where id in (select whom from surveyAssign where who = ${userId}) and id not in(select surveyUserId from answers where userId = ${userId})`).then(result => {
         res.send(result)
     }).catch(err => {
