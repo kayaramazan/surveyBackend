@@ -7,12 +7,23 @@ router.get('/', function(req, res, next) {
     database.query('select * from users where authority != 1').then(result => {
         res.send(result)
     }).catch(err => {
-        res.status(200).send('Something went wrong !!')
+        res.status(200).send('Something went wrongss !!')
     })
     
 });
 
-
+router.post('/delete',(req,res,next)=>
+{
+    console.log('asad')
+    let userId = req.body.userId
+    database.query(`delete from users where id=${userId}`).then(result=>
+        {
+        res.status(200).send({success:true})
+    }).catch(err=>{
+        console.log(err)
+        res.status(300).send({success:false})
+    })
+})
 
 router.post('/login',function (req,res,next) { 
     let user = req.body
@@ -29,6 +40,7 @@ router.post('/login',function (req,res,next) {
     }else
     res.send('Failed')
 })
+
 
 
 router.post('/register', function(req, res, next) {
@@ -71,12 +83,28 @@ router.get('/resultUser',(req,res,next) =>
     })
 })
 router.get('/:userId',(req,res,next)=>
-{ 
-    userId = req.params.userId; 
-    // select * from users u join surveyAssign sc on sc.whom = u.id where u.id in (select whom from surveyAssign where who = 16) and u.id not in(select surveyUserId from answers where userId = 16)
-
-    database.query(`select * from users where id in (select whom from surveyAssign where who = ${userId}) and id not in(select surveyUserId from answers where userId = ${userId})`).then(result => {
-        res.send(result)
+{ let finalResult = [],temp = []
+    userId = req.params.userId;  
+    // and u.id not in(select surveyUserId from answers where userId = ${userId})
+    database.query(`select u.id as id,sa.who,sa.whom,u.department as department,sa.surveyCaptionId,u.username as username,sc.surveyTitle as surveyTitle from surveyAssign as sa join users u on u.id=sa.whom join surveyCaption sc on sc.id = sa.surveyCaptionId where sa.who = ${userId}  order by u.username`).then(result => {
+        
+        database.query(`SELECT * FROM answers WHERE userid=${userId}`).then(item =>{ 
+            console.log('-------------');
+            if(item.length == 0)
+            res.send(result)
+            item.forEach(i => {
+            temp.push(result.filter(element=>element.surveyCaptionId != i.surveyCaptionId || element.whom != i.surveyUserId))
+               
+               temp.forEach(e => {
+                finalResult.push(e)
+                });
+            temp.length = 0;
+            })
+            console.log(finalResult[0]) 
+            console.log(result) 
+        }).then(()=>{ 
+            res.send(finalResult[0])
+        })
     }).catch(err => {
         res.status(300).send('Something went wrong !!')
     })

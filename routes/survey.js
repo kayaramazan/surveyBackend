@@ -7,9 +7,9 @@ router.get('/', function (req, res, next) {
 });
 
 // sorular ve cevaplari cekiliyor
-router.get('/questions',(req,res) =>{
-   
-  database.query('select a.id as cevapId,q.id, q.surveyQuestion,a.answer from survey q join surveyAnswers a on q.id = a.QuestionId join surveyCaption sc on q.surveyCaptionId=sc.id  ').then(
+router.get('/questions/:surveyCaptionId',(req,res) =>{
+  surveyCaptionId = req.params.surveyCaptionId;
+  database.query(`select a.id as cevapId,q.id, q.surveyQuestion,a.answer from survey q join surveyAnswers a on q.id = a.QuestionId join surveyCaption sc on q.surveyCaptionId=sc.id where q.surveyCaptionId = ${surveyCaptionId}  `).then(
     result => 
     {
       res.status(200).send(result)
@@ -45,7 +45,15 @@ router.get('/title',(req,res)=>{
     res.status(300).send('Something went wrong !!')
   })
 })
-
+ 
+router.post('/delete',(req,res)=>
+{
+    let captionId = req.body.userId
+    database.query(`delete from surveyCaption where id=${captionId}`).then(result=>
+        {
+        res.status(200).send({success:true})
+    }).catch(err=>console.log(err))
+})
 // yeni soru ve cevaplari eklenir
 router.post('/new', (req, res) => { 
   let survey = req.body;
@@ -65,7 +73,7 @@ router.post('/new', (req, res) => {
     .then(result => {
       questionId = result.insertId;
       answers.forEach(item => {
-        database.query(`insert into surveyAnswers (questionId,answer) values (${questionId},"${item}")`)
+        database.query(`insert into surveyAnswers (questionId,answer,surveyCaptionId) values (${questionId},"${item}",${survey.surveyCaptionId})`).catch(err => console.log(err))
 
       })
     }).catch(err => console.log(err))
@@ -91,15 +99,20 @@ router.post('/finalAnswer', (req,res) =>
   let result  = req.body.answers.results;
   let userId = req.body.answers.userId;
   let surveyUserId = req.body.answers.surveyUserId; 
+  let surveyCaptionId = req.body.answers.surveyCaptionId; 
   
    result.forEach(item =>
    {
      console.log(item)
-       database.query(`insert into answers (questionId,answerId,userId,surveyUserId) values (${item.questionId},${item.answerId},${userId},${surveyUserId})`)
+       database.query(`insert into answers (questionId,answerId,userId,surveyUserId,surveyCaptionId) values (${item.questionId},${item.answerId},${userId},${surveyUserId},${surveyCaptionId})`)
        .then(e => console.log('inserted'))
        .catch(err => console.log(err));
    })
    res.send({succes:true})
+})
+
+router.get('/getResults',(req,res)=>{
+
 })
 
 
