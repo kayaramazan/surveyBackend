@@ -1,11 +1,14 @@
 var express = require('express');
 var router = express.Router(); 
 var md5 = require('md5');
+const { v4: uuidv4 } = require('uuid');
 const { database } = require('../config/helpers')
+var jwt = require('jsonwebtoken'); 
+const authReqAdmin=123123
 /* GET home page. */
 router.get('/', function(req, res, next) {
   
-    database.query('select * from users where authority != 1').then(result => {
+    database.query(`select * from users where authority != ${authReqAdmin} `).then(result => {
         res.send(result)
     }).catch(err => {
         res.status(200).send('Something went wrongss !!')
@@ -26,15 +29,15 @@ router.post('/delete',(req,res,next)=>
 })
 
 router.post('/login',function (req,res,next) { 
-    console.log(md5('123456'))
+   
     let user = req.body
     if(user.username)
     {
         database.query(`select * from users where username="${user.username}" and password = "${md5(user.password)}"`)
         .then(result => {
             if(result.length>0)
-            {
-                res.status(200).send(result)
+            { 
+                res.status(200).send({result:jwt.sign(JSON.stringify(result), 'shhhhh')})
             }else
             res.status(200).send('Kullanici bulunamadi')
         }).catch(err => console.log(err))
