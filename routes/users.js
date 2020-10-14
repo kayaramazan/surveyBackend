@@ -39,7 +39,7 @@ router.post('/login',function (req,res,next) {
             { 
                 res.status(200).send({result:jwt.sign(JSON.stringify(result), 'shhhhh')})
             }else
-            res.status(200).send('Kullanici bulunamadi')
+            res.status(200).send({err:'Kullanici bulunamadi'})
         }).catch(err => console.log(err))
     }else
     res.send('Failed')
@@ -116,7 +116,7 @@ router.get('/resultsById/:id',(req,res,next)=>
 })
 router.get('/totalResult', (req,res)=>
 { 
-     database.query(`select u.username,count(s.id) as qCount,sum(score) as score from surveyAnswers sa join answers a on a.answerId=sa.id join users u on a.surveyUserId = u.id join survey s on s.id=a.questionId GROUP by u.username`)
+     database.query(`select u.username,u.id,count(s.id) as qCount,sum(score) as score from surveyAnswers sa join answers a on a.answerId=sa.id join users u on a.surveyUserId = u.id join survey s on s.id=a.questionId GROUP by u.username`)
     .then(result =>{   
     res.status(200).send(result)
     }).catch(err => {
