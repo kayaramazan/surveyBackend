@@ -9,7 +9,7 @@ describe('users', ()=>{
     {
         it('Users donucek',(done)=>{
             chai.request(app)
-            .get('/users')
+            .get('/api/users')
             .end((err,res)=>{
                 if(err) done(err)
                 .expect(res).to.have.status(200)
@@ -22,11 +22,9 @@ describe('users', ()=>{
         describe('GET  /survey/questions',()=>{
             it('Sorular ve cevap siklari cekilicek',(done)=>{
                 chai.request(app)
-                .get('/survey/questions')
-                .end((err,res)=>{
-                    console.log(err,res)
-                    if(err) done(err)
-                    
+                .get('api/survey/questions')
+                .end((err,res)=>{ 
+                    if(err) done(err) 
                     .expect(res).to.have.status(200)
                     .expect(res.body).to.be.an('array')
                     done();

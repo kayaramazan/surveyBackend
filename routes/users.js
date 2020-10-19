@@ -114,6 +114,23 @@ router.get('/resultsById/:id',(req,res,next)=>
 
 
 })
+
+router.get('/listAnswers/:id',(req,res,next)=>
+{
+    let id = req.params.id;
+    console.log(id)
+    // database.query(`select sc.surveyTitle,a.id, u.username,s.surveyQuestion, sa.answer from answers a join survey s on a.questionId = s.id join surveyAnswers sa on a.answerId = sa.id join users u on a.surveyUserId = u.id join surveyCaption sc on sc.id=s.surveyCaptionId where userId = ${id} order by username,sc.surveyTitle desc`).then(result =>{
+    database.query(`select u.username,sc.surveyTitle, s.surveyQuestion,sa.answer,sa.score from answers a join survey s on s.id = questionId join surveyAnswers sa on a.answerId = sa.id join users u on u.id = a.userId join surveyCaption sc on sc.id = a.surveyCaptionId where surveyUserId = ${id}`)
+    .then(result =>{   
+        console.log(result)
+    res.status(200).send(result)
+    }).catch(err => {
+        res.status(300).send({error:'Something went wrong !!'})
+    })
+
+
+})
+
 router.get('/totalResult', (req,res)=>
 { 
      database.query(`select u.username,u.id,count(s.id) as qCount,sum(score) as score from surveyAnswers sa join answers a on a.answerId=sa.id join users u on a.surveyUserId = u.id join survey s on s.id=a.questionId GROUP by u.username`)
